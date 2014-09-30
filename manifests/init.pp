@@ -86,7 +86,14 @@ class domain_membership (
 
   # Since the powershell command is combersome, we'll construct it here for clarity... well, almost clarity
   #
-  $command = "(Get-WmiObject -Class Win32_ComputerSystem).JoinDomainOrWorkGroup('${domain}',${_password},'${username}@${domain}',${_machine_ou},${fjoinoption})"
+  case $kernelversion {
+    '6.3':{
+      $command = "Add-Computer -DomainName ${domain} -Credential ${domain}\${username}"
+    }
+    default:{
+      $command = "(Get-WmiObject -Class Win32_ComputerSystem).JoinDomainOrWorkGroup('${domain}',${_password},'${username}@${domain}',${_machine_ou},${fjoinoption})"
+    }
+  }
 
   exec { 'join_domain':
     command  => $command,
